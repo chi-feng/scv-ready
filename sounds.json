@@ -1,0 +1,40 @@
+{
+  "_comment": "Curated SCV voice lines mapped to Claude Code hook events",
+
+  "SessionStart": [
+    "SCV_Ready00.mp3",
+    "SCV_Ready01.mp3"
+  ],
+
+  "UserPromptSubmit": [
+    "SCV_Yes00.mp3",
+    "SCV_Yes09.mp3",
+    "SCV_Yes11.mp3",
+    "SCV_Yes13.mp3",
+    "SCV_Yes15.mp3",
+    "SCV_What05.mp3"
+  ],
+
+  "PermissionRequest": [
+    "SCV_Attack01.mp3",
+    "SCV_Attack02.mp3",
+    "SCV_What04.mp3"
+  ],
+
+  "Stop": [
+    "SCV_JobsFinished00.mp3",
+    "SCV_Yes05.mp3"
+  ],
+
+  "PostToolUseFailure": [
+    "SCV_Attack03.mp3",
+    "SCV_Attack00.mp3",
+    "SCV_CantBuild00.mp3",
+    "SCV_CantBuild01.mp3"
+  ],
+
+  "PreCompact": [
+    "SCV_Yes04.mp3",
+    "SCV_Pissed06.mp3"
+  ]
+}
