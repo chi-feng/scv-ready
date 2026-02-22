@@ -1,12 +1,12 @@
-# SC2 SCV Soundboard for Claude Code
+# scv-ready
 
-Your Claude Code sessions now have a hard-working SCV providing commentary.
+StarCraft 2 SCV voice lines for Claude Code. Your coding sessions now have a hard-working SCV providing commentary.
 
 ## Install
 
 ```bash
-git clone git@github.com:AnthroPeon/claude-sc2-soundboard.git
-cd claude-sc2-soundboard
+git clone git@github.com:AnthroPeon/scv-ready.git
+cd scv-ready
 ./install.sh
 ```
 
@@ -29,11 +29,11 @@ Important events (errors, task completion) always play through.
 ## Controls
 
 ```bash
-# Mute (creates pause file)
-touch /path/to/claude-sc2-soundboard/.paused
+# Mute
+touch /path/to/scv-ready/.paused
 
 # Unmute
-rm /path/to/claude-sc2-soundboard/.paused
+rm /path/to/scv-ready/.paused
 ```
 
 ## Uninstall
