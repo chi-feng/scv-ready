@@ -5,7 +5,7 @@ StarCraft 2 SCV voice lines for Claude Code. Your coding sessions now have a har
 ## Install
 
 ```bash
-git clone git@github.com:AnthroPeon/scv-ready.git
+git clone git@github.com:chi-feng/scv-ready.git
 cd scv-ready
 ./install.sh
 ```
