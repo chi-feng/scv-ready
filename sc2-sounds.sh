@@ -7,9 +7,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOUNDS_DIR="$SCRIPT_DIR/sounds"
 MAPPING_FILE="$SCRIPT_DIR/sounds.json"
 STATE_DIR="${TMPDIR:-/tmp}/sc2-soundboard"
+VOLUME="0.5"
 
 # Bail silently if missing files
 [ -d "$SOUNDS_DIR" ] && [ -f "$MAPPING_FILE" ] || exit 0
+
+# Mute check
+[ -f "$SCRIPT_DIR/.paused" ] && exit 0
 
 # Read hook event JSON from stdin
 INPUT="$(cat)"
@@ -22,21 +26,27 @@ EVENT="$(echo "$INPUT" | jq -r '.hook_event_name // empty' 2>/dev/null)"
 COUNT="$(jq -r --arg e "$EVENT" '.[$e] // [] | length' "$MAPPING_FILE")"
 [ "$COUNT" -gt 0 ] 2>/dev/null || exit 0
 
-mkdir -p "$STATE_DIR"
+mkdir -p "$STATE_DIR" || exit 0
 
-# Cooldown: skip if a sound played within the last N seconds
-# Prevents noise when agent teams fire many events rapidly
+# Cooldown: prevent rapid-fire sounds from agent teams
+# Important events (errors, completion, session start) always play
 COOLDOWN_FILE="$STATE_DIR/last_sound_time"
-COOLDOWN_SECS=3
+COOLDOWN_SECS=5
 NOW="$(date +%s)"
-if [ -f "$COOLDOWN_FILE" ]; then
-  LAST_TIME="$(cat "$COOLDOWN_FILE" 2>/dev/null)" || LAST_TIME=0
-  ELAPSED=$((NOW - LAST_TIME))
-  # SessionStart always plays (greeting), others respect cooldown
-  if [ "$EVENT" != "SessionStart" ] && [ "$ELAPSED" -lt "$COOLDOWN_SECS" ]; then
-    exit 0
-  fi
-fi
+case "$EVENT" in
+  SessionStart|Stop|PostToolUseFailure|PreCompact)
+    # Always play — these are high-value signals
+    ;;
+  *)
+    if [ -f "$COOLDOWN_FILE" ]; then
+      LAST_TIME="$(cat "$COOLDOWN_FILE" 2>/dev/null)" || LAST_TIME=0
+      ELAPSED=$((NOW - LAST_TIME))
+      if [ "$ELAPSED" -lt "$COOLDOWN_SECS" ]; then
+        exit 0
+      fi
+    fi
+    ;;
+esac
 printf '%s' "$NOW" > "$COOLDOWN_FILE"
 
 # No-repeat: read last played for this event
@@ -45,9 +55,8 @@ LAST=""
 [ -f "$LAST_FILE" ] && LAST="$(cat "$LAST_FILE" 2>/dev/null)" || true
 
 # Pick random sound, avoid repeat if possible
-MAX_TRIES=5
 CHOSEN=""
-for _ in $(seq 1 $MAX_TRIES); do
+for (( i=0; i<5; i++ )); do
   IDX=$((RANDOM % COUNT))
   CHOSEN="$(jq -r --arg e "$EVENT" --argjson i "$IDX" '.[$e][$i]' "$MAPPING_FILE")"
   [ "$COUNT" -eq 1 ] || [ "$CHOSEN" != "$LAST" ] && break
@@ -60,14 +69,17 @@ printf '%s' "$CHOSEN" > "$LAST_FILE"
 PID_FILE="$STATE_DIR/sound.pid"
 if [ -f "$PID_FILE" ]; then
   OLD_PID="$(cat "$PID_FILE" 2>/dev/null)" || true
-  [ -n "$OLD_PID" ] && kill "$OLD_PID" 2>/dev/null || true
+  if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+    kill "$OLD_PID" 2>/dev/null || true
+  fi
+  rm -f "$PID_FILE"
 fi
 
 # Play (background, non-blocking)
 SOUND_PATH="$SOUNDS_DIR/$CHOSEN"
 if [ -f "$SOUND_PATH" ]; then
-  afplay "$SOUND_PATH" &
-  echo $! > "$PID_FILE"
+  nohup afplay -v "$VOLUME" "$SOUND_PATH" >/dev/null 2>&1 &
+  printf '%s' $! > "$PID_FILE"
   disown
 fi
 

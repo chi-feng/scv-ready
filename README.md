@@ -20,10 +20,21 @@ Restart Claude Code to activate.
 | You submit a prompt | "Yes sir!" / "Roger" / "Will do" / "Big job, huh?" |
 | Permission requested | "This is your plan?!" / "What, you run out of marines?" |
 | Task completes | "Job's finished!" / "Well butter my biscuit!" |
-| Tool fails | "Oh, that's just great..." / "I can't build here" |
-| Context compaction | "Woohoo! Overtime!" / "My cow died last night, so I don't need your bull" |
+| Bash command fails | "Oh, that's just great..." / "I can't build here" |
+| Context compaction | "Woohoo! Overtime!" |
 
-A 3-second cooldown prevents noise when using agent teams.
+A 5-second cooldown prevents noise when using agent teams.
+Important events (errors, task completion) always play through.
+
+## Controls
+
+```bash
+# Mute (creates pause file)
+touch /path/to/claude-sc2-soundboard/.paused
+
+# Unmute
+rm /path/to/claude-sc2-soundboard/.paused
+```
 
 ## Uninstall
 
@@ -35,6 +46,8 @@ A 3-second cooldown prevents noise when using agent teams.
 
 Edit `sounds.json` to change which sounds play for which events.
 All 65 SCV voice lines are included in `sounds/` — only the best are mapped by default.
+
+Edit the `VOLUME` variable in `sc2-sounds.sh` to adjust volume (0.0 to 1.0, default 0.5).
 
 ## Requirements
 
